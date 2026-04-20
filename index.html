@@ -1179,8 +1179,8 @@
         <h3>Bereit f&uuml;r echte Zahlen?</h3>
         <p>Im Erstgespr&auml;ch rechnen wir mit deinen tats&auml;chlichen Werten &ndash; kein Raten, keine Benchmarks.</p>
         <div class="cta-buttons">
-          <a href="https://vogler-marketing-26-04.webflow.io/erstgespraech" class="btn btn-primary">Erstgespr&auml;ch vereinbaren</a>
-          <button class="btn btn-outline" onclick="shareLink()">Simulator-Link teilen</button>
+          <a href="https://vogler-marketing-26-04.webflow.io/erstgespraech" class="btn btn-primary" onclick="trackEvent('rechner_cta_clicked',{rechner:'budget-simulator',cta:'erstgespraech',system:state.system})">Erstgespr&auml;ch vereinbaren</a>
+          <button class="btn btn-outline" onclick="shareLink();trackEvent('rechner_cta_clicked',{rechner:'budget-simulator',cta:'link_teilen'})">Simulator-Link teilen</button>
         </div>
       </div>
 
@@ -1202,6 +1202,18 @@
 </div>
 
 <script>
+// ============================================================
+// TRACKING — postMessage to parent (Webflow/GTM)
+// ============================================================
+function trackEvent(eventName, params) {
+  var data = {type: 'vogler-tracking', event: eventName, params: params || {}};
+  if (window.parent !== window) {
+    window.parent.postMessage(data, '*');
+  }
+}
+
+trackEvent('rechner_started', {rechner: 'budget-simulator'});
+
 // --- State ---
 var state = {
   industry: 'it',
@@ -1267,6 +1279,7 @@ function selectSystem(sys) {
   state.system = sys;
   document.querySelectorAll('.system-card').forEach(function(c) { c.classList.remove('active'); });
   document.querySelector('[data-system="' + sys + '"]').classList.add('active');
+  trackEvent('rechner_input', {rechner: 'budget-simulator', field: 'system', value: sys});
 }
 
 function selectPeriod(m) {
@@ -1285,6 +1298,12 @@ function goToStep(step) {
   document.getElementById('step-label').textContent = 'Schritt ' + step + ' von 4: ' + stepNames[step];
   document.getElementById('step-count').textContent = pct + '%';
   document.getElementById('progress-fill').style.width = pct + '%';
+
+  trackEvent('rechner_step', {
+    rechner: 'budget-simulator',
+    step: step,
+    step_name: stepNames[step]
+  });
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1422,6 +1441,25 @@ function calculate() {
 
   // --- Show step 4 ---
   goToStep(4);
+
+  // --- Tracking: Ergebnis ---
+  trackEvent('rechner_result', {
+    rechner: 'budget-simulator',
+    system: sysKey,
+    industry: state.industry,
+    acv: acv,
+    months: months,
+    retention_factor: state.retentionFactor,
+    total_investment: totalInvestment,
+    leads_low: leadsLow,
+    leads_high: leadsHigh,
+    deals_low: dealsLow,
+    deals_high: dealsHigh,
+    roi_ltv: roiMidLTV,
+    roi_acv: roiMidACV,
+    break_even_ltv: breakEvenLTV,
+    negative_roi: isNegativeROI
+  });
 
   document.getElementById('result-system-name').textContent = s.name;
   document.getElementById('result-industry-name').textContent = b.name;
