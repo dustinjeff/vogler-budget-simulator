@@ -80,8 +80,8 @@
   // CSS
   // ==========================================================================
   var CSS = '\
-    :host { display: block; }\
-    :root {\
+    :host {\
+      display: block;\
       --bg: #0a0a0a; --bg-card: #141414; --bg-input: #1a1a1a;\
       --border: #2a2a2a; --border-focus: #4a4a4a; --page-bg: #f5f5f0;\
       --text: #e8e8e8; --text-muted: #888; --text-dim: #666;\
